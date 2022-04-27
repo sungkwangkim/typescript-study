@@ -1,0 +1,12 @@
+{
+  "name": "typescript-study",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/sungkwangkim/typescript-study.git",
+  "author": "sungkwang <sungkwang@wantedlab.com>",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^4.6.3"
+  }
+}
