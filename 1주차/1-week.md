@@ -180,7 +180,6 @@ function asNumber(val: number | string): number {
 ```
 
 ### 런타임 타입은 선언된 타입과 다를 수 있습니다.
-
 ```javascript
 function setLightSwitch(value: boolean) {
     switch (value) {
@@ -194,5 +193,40 @@ function setLightSwitch(value: boolean) {
             console.log('default')
     }
 }
+
+interface LightApiResponse {
+    lightSwitchValue: boolean;
+}
+
+async function setLight() {
+    const response = await fetch('/light');
+    const result: LightApiResponse = await response.json();
+    setLightSwitch(result.lightSwitchValue);
+
+    // /light를 요청하면 LightApiResponse를 반환하라고 선언했지만, 실제로 그렇게 되리라는 보장은 없습니다.
+}
 ```
 
+- 타입스크립트에서는 런타임 타입과 선언된 타입이 맞지 않을 수 있습니다.
+- 선언된 타입이 언제든지 달라질 수 있다는 것을 명심해야 합니다.
+
+
+### 타입스크립트 타입으로는 함수를 오버로드할 수 없습니다.
+타입스크립트에서는 타입과 런타임 동작이 무관하기 대문에, 함수 오버로딩은 불가능.
+```javascript
+function add (a: number, b: number) {
+    return a + b;
+}
+
+function add (a: number, b: string) {
+    return a + b;
+}
+```
+
+### 타입스크립트 타입은 런타임 성능에 영향을 주지 않습니다.
+- 타입과 타입 연산자는 자바스크립트 변환시점에 제거되기 때문에, 런타임의 성능에 영향을 주지 않습니다.
+
+- 타입스크리트 컴파일러는 '빌드타임' 오버헤드가 있지만 상당히 빠른 편임
+- 혹시라도 빌드 오버헤드가 커지면, '트렌스파일만(transpile only)'을 설정하여 타입체크를 skip 할수 있음.
+- ES5로 타킷으로 컴파일될때 호환성을 위한 특정 헬퍼 코드를 추가하는데, 이런경우 호환성을 위한 오버헤드 또는 성능을 위한 네이티브 구현체 선택 문제임.
+- 즉.. 호환성과 성능 사이의 선택은 컴파일 타킷과 언어 레벨의 문제이며, 여전히 타입과는 무관함.
