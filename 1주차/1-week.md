@@ -230,3 +230,105 @@ function add (a: number, b: string) {
 - 혹시라도 빌드 오버헤드가 커지면, '트렌스파일만(transpile only)'을 설정하여 타입체크를 skip 할수 있음.
 - ES5로 타킷으로 컴파일될때 호환성을 위한 특정 헬퍼 코드를 추가하는데, 이런경우 호환성을 위한 오버헤드 또는 성능을 위한 네이티브 구현체 선택 문제임.
 - 즉.. 호환성과 성능 사이의 선택은 컴파일 타킷과 언어 레벨의 문제이며, 여전히 타입과는 무관함.
+
+
+<br>
+<br>
+## 아이템4 구조적 타이핑에 익숙해지기
+
+
+### 구조적 타이핑이란?
+NamedVector의 구조가 Vector2D와 호환이 되기 때문에 calculateLength 호출이 가능하는 것을 구조적 타이핑(structual typeing)
+```javascript
+interface Vector2D {
+    x: number;
+    y: number;
+}
+
+interface Vector3D {
+    x: number;
+    y: number;
+    z: number;
+}
+
+interface NamedVector {
+    name: string;
+    x: number;
+    y: number;
+}
+
+function caculateLength(v: Vector2D) {
+    return math.sqrt(v.x * x.y + v.y * v.y)
+}
+
+
+const v: NamedVector = { x: 3, y: 4, name: 'zee'}
+caculateLength(v) // 정상 결과는 5
+```
+
+
+<br>
+루프를 쓰는것 보다, 모든속성을 구현하는것이 더 좋음.
+
+BAD
+```javascript
+function caculateLength1(v: Vector3D) {
+    let length = 0;
+    for (const axis of Object.keys(v)) {
+        const coord = v[axis]
+        length += Math.abs(coord)
+    }
+    return length
+}
+
+// address 속성부터 에러가 나서 이 예재는 잘못된 예재인듯..
+const vec3D: Vector3D = { x: 3, y: 4, z: 1, address: '123 hi'}
+caculateLength1(vec3D) 
+```
+
+<br>
+
+GOOD
+```javascript
+function caculateLength1(v: Vector3D) {
+    let length = 0;
+    for (const axis of Object.keys(v)) {
+        const coord = v[axis]
+        length += Math.abs(coord)
+    }
+    return length
+}
+
+// address 속성부터 에러가 나서 이 예재는 잘못된 예재인듯..
+const vec3D: Vector3D = { x: 3, y: 4, z: 1, address: '123 hi'}
+caculateLength1(vec3D) 
+```
+
+
+## 아이템5 any 타입 지양하기
+any를 사용하면 타입스크립트의 수많은 장점을 누릴 수 없게 된다.
+부득이하게 any를 사용하더라도 그 위험성을 알고 있어야 합니다.
+
+- any 타입에는 타입 안정성이 없습니다.
+- any 타입은 코딩시 자동완성이 안됩니다.
+- any 타입은 코드 리팩터링 때 버그를 감춥니다.                                                                                           
+```javascript
+// interface에서 any를 number로 변경시 2군데를 수정해야 한다.
+interface Props {
+    onSelectedItem: (item: any) = > void;
+}
+function Comp (props: Props) {
+   const { onSelectedItem } = props;
+}
+
+
+
+let selectedId: number = 0;
+function handleSelecItem(item: any) {
+    selectedId = item.id;
+}
+
+Comp({onSelectedItem: handleSelectItem})
+
+```
+- any는 타입 설계를 감춰버립니다.
