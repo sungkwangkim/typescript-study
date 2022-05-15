@@ -332,3 +332,157 @@ Comp({onSelectedItem: handleSelectItem})
 
 ```
 - any는 타입 설계를 감춰버립니다.
+
+
+
+
+# 2장 타입스크립트의 타입 시템
+타입스크립트의 가장 중요한 역활은 타입 시스템.
+
+2장에서 다루는것
+- 타입 시스템이란 무엇인지?
+- 어떻게 사용?
+- 무엇을 결정?
+- 가급적 사용하지 말아야 할 기능.
+
+<br />
+
+## 아이템6 편집기를 사용하여 타입 시스템 탐색하기
+
+- 타입스크립트 컴파일러(tsc)
+- 단독으로 실행할 수 있는 타입스크립트 서버(tsserver)
+
+타입스크립트가 타입을 어떻게 이해하고 있는지 살펴보는 것. (아래 2가지 개념 중요)
+- 타입 넓히기 (아이템 21)
+- 타입 좁히기 (아이템 22)
+
+<br />
+내가 typescript를 쓰면서 가장 좋았던 부분. null 체크
+
+```javascript
+function getElement(elemId: string|HTMLElement|null): HTMLElement {
+    if (typeof elemId === 'object') {
+        return elemId;
+        // ~~~~~~~ 'HTMLElement | null 
+    }
+    else if (elemId === null) {
+        return document.body;
+    }
+    else {
+        const el = document.getElementById(elemId);
+        return el;
+        // ~~~~~~~ 'HTMLElement | null 
+    }
+}
+```
+
+## 아이템7 타입이 값들의 집합이라고 생각하기
+
+가장 작은 집한은 아무것도 포함하지 않는 공집합이며,
+타입스크립트에서는 `never` 타입입니다.
+
+(드디어 never가 나왔군...)
+
+`never`타입으로 선언된 변수의 범위는 공집합이기 때문에 아무런 값도 할당할 수 없습니다.
+
+(never는 어떻게 쓰는거지? 매우 궁금..)
+
+- 리터럴 타입 (유닛타입)
+   - 가장 작은 집합
+- 유니온 타입
+   - 2이상 묶은거 (|)
+
+
+
+타입스크립트 용어와 집합용어
+- never --> 공집합
+- 리터럴 --> 원소가 1개인 집합
+- 값이 T에 할당 가능 --> 값이 T의 원소
+- T1이 T2에 할당 가능 --> T1이 T2의 부분 집합
+- T1이 T2를 상속 --> T1이 T2의 부분 집합
+- T1 | T2 --> T1과 T2의 합집합
+- T1 & T2 --> T1과 T2의 교집합
+- unknown --> 전체 (universal) 집합
+
+
+## 아이템8 타입 공간과 값 공간의 심벌 구분하기
+
+> 심벌?<br>
+> interface Person { ... } <br>
+> const Person = ... <br>
+> 위와 같이 인터페이스명, 함수명, 변수명을 칭하는 용어00 
+
+
+타입스크립트의 심벌(symbol)은 타입 공간이나 값 공간 중의 한 곳에 존재합니다.
+
+(타입공간? 값 공간? 이라는 개념있구만! 아직 모름!)
+
+2공간의 개념을 잡으려면, 타입스크립트 플레이그라운드를 활용 (https://www.typescript.org/play)
+
+
+```javascript
+
+// 이렇게 쓰는것을 타입 공간
+interface Cylinder {
+    radius: number;
+    height: number;
+}
+
+// 이렇게 쓰면 값 공간
+const Cylinder = {radius: number, height: number} => ({radius, height})
+
+
+function calculateVolume(shape: unknow) {
+    if (shape instanceof Cylinder) {
+        shape.radius = shape.radius
+        // ~~~~~~~ '{}' 형식에 'raduis' 속성이 없다
+
+    }
+}
+```
+
+
+instanceof Cylinder는 타입이 아니라, 함수를 참조함.
+
+(의도는 interface의 Cylinder로 체크하기 원했음.)
+
+instanceof는 자바스크립트 런타입에 연산자이기 때문에, 값에 대해서 연산을 함.
+<br /><br />
+
+
+### 제너릴 타입의 한정자(Generic<T extends number>) 이해했음! 
+이것을 이해라면, index 타입을 이해해야함.
+
+
+<br />
+<br />
+
+함수 파라미터에서 구조분해를 할떄 좋은 방법
+
+```javascript
+// base
+function email(option: {person: Person, subject: string, body: string}) {
+    // ...
+}
+
+// Bad
+// 오류남..
+function email({
+    person: Person,
+    // ~~~~~ 바인딩 요소 'Person'에 암시적으로 'any' 형식이 있습니다.
+    subject: string,
+    body: string
+}) {
+    // ...
+}
+
+
+// Good
+function email({
+    person,
+    subject,
+    body
+}: {person: Person, subject: string, body: string}) {
+    // ...
+}
+```
